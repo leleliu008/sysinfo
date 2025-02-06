@@ -67,7 +67,7 @@ static void showHelp() {
             "sysinfo -h\n"
             "    show help of this command.\n\n"
             "sysinfo --version\n"
-            "sysinfo -V\n"
+            "sysinfo -v\n"
             "    show version of this command.\n\n"
             "sysinfo kind\n"
             "    show the kind of your system.\n\n"
@@ -114,7 +114,7 @@ int main(int argc, char *argv[]) {
     } else if (strcmp(argv[1], "--help") == 0) {
         showHelp();
         return 0;
-    } else if (strcmp(argv[1], "-V") == 0) {
+    } else if (strcmp(argv[1], "-v") == 0) {
         printf("%s\n", "1.0.0");
         return 0;
     } else if (strcmp(argv[1], "--version") == 0) {
