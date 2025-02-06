@@ -21,7 +21,7 @@ jobs:
       - run:  id
 
       - run:  sudo apt -y update
-      - run:  sudo apt -y install gcc cmake ninja
+      - run:  sudo apt -y install gcc cmake ninja-build
 
       - uses: actions/checkout@main
 

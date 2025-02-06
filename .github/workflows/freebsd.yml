@@ -29,7 +29,6 @@ jobs:
               eval "$@"
             }
 
-            run sudo pkg update
             run sudo pkg install -y cmake ninja gcc
 
             run cmake -S . -B   build.d -G Ninja -DCMAKE_INSTALL_PREFIX=./output -DCMAKE_VERBOSE_MAKEFILE=ON
