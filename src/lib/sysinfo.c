@@ -465,7 +465,7 @@ int sysinfo_libc() {
 
         if (strcmp(uts.machine, "ppc64le") == 0) {
             p = "powerpc64le";
-        } else if (strcmp(uts.machine, "armv7a") == 0) {
+        } else if (strcmp(uts.machine, "armv7l") == 0) {
             p = "armhf";
         } else {
             p = uts.machine;
