@@ -448,9 +448,6 @@ int sysinfo_vers(char * buf, size_t bufSize) {
 #endif
 }
 
-#define LIBC_GNU    0x0001
-#define LIBC_MUSL   0x0010
-
 int sysinfo_libc() {
     struct utsname uts;
 

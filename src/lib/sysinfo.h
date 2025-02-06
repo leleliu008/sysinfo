@@ -6,6 +6,9 @@
 #include <unistd.h>
 #include <sys/types.h>
 
+#define LIBC_GNU    0x0001
+#define LIBC_MUSL   0x0010
+
 typedef struct {
    char * kind;
    char * type;

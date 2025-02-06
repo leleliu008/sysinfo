@@ -211,8 +211,8 @@ int main(int argc, char *argv[]) {
         }
 
         switch(ret) {
-            case 1:  printf("glibc\n"); break;
-            case 2:  printf("musl\n");  break;
+            case LIBC_GNU:  printf("glibc\n"); break;
+            case LIBC_MUSL: printf("musl\n");  break;
             default: break;
         }
 
