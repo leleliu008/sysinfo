@@ -1,0 +1,532 @@
+name: publish sysinfo
+
+on:
+  workflow_dispatch:
+
+jobs:
+
+  check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - id:  check-new-release
+        run: |
+          cat > QUERY <<EOF
+          {
+            repository(owner: "leleliu008", name: "sysinfo") {
+                latestRelease {
+                  name
+                }
+            }
+          }
+          EOF
+
+          LATEST_RELEASE_VERSION="$(gh api graphql -f "query=$(cat QUERY)" --jq .data.repository.latestRelease.name | cut -d+ -f2)"
+
+          printf 'LATEST_RELEASE_VERSION=%s\n' "$LATEST_RELEASE_VERSION"
+
+          CURRENT_SOURCE_VERSION="$(git rev-parse HEAD)"
+
+          printf 'CURRENT_SOURCE_VERSION=%s\n' "$CURRENT_SOURCE_VERSION"
+
+          if [ "$LATEST_RELEASE_VERSION" = "$CURRENT_SOURCE_VERSION" ] ; then
+              printf 'HAS_NEW_COMMIT=no\n'        >> "$GITHUB_OUTPUT"
+          else
+              printf 'HAS_NEW_COMMIT=yes\n'       >> "$GITHUB_OUTPUT"
+          fi
+
+          printf 'GIT_SHA=%s\n' "$CURRENT_SOURCE_GIT_SHA" >> "$GITHUB_OUTPUT"
+
+    outputs:
+      new-release: ${{ steps.check-new-release.outputs.HAS_NEW_COMMIT }}
+      git-sha:     ${{ steps.check-new-release.outputs.GIT_SHA }}
+
+
+  dragonflybsd:
+    needs: [check]
+    if: needs.check.outputs.new-release == 'yes'
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        version: ['6.4']
+        profile: [debug, release]
+
+    steps:
+      - uses: vmactions/dragonflybsd-vm@v1
+        with:
+          release: "${{ matrix.version }}.0"
+          usesh: true
+          sync: rsync
+          copyback: true
+          run: |
+            run() {
+              printf "\033[0;35m==>\033[0m \033[0;32m%b\n\033[0m" "$*"
+              eval "$@"
+            }
+
+            set -e
+
+            run pkg install -y curl libnghttp2 gcc
+
+            run curl -LO https://raw.githubusercontent.com/leleliu008/ppkg/master/ppkg
+            run chmod a+x ppkg
+            run ./ppkg setup
+            run ./ppkg update
+
+            ~/.ppkg/uppm/installed/gsed/bin/gsed -i "/git-url/a git-sha: ${{ needs.check.outputs.git-sha }}" ~/.ppkg/repos.d/official-core/formula/sysinfo.yml
+
+            run ./ppkg install dragonflybsd-${{ matrix.version }}-x86_64/sysinfo --static --profile=${{ matrix.profile }}
+            run ./ppkg bundle  dragonflybsd-${{ matrix.version }}-x86_64/sysinfo .tar.gz
+            run ./ppkg bundle  dragonflybsd-${{ matrix.version }}-x86_64/sysinfo .tar.xz
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sysinfo---dragonflybsd-${{ matrix.version }}-x86_64-${{ matrix.profile }}.tar
+          path: sysinfo-*-dragonflybsd-${{ matrix.version }}-x86_64.${{ matrix.profile }}.tar.*
+
+
+  bsd:
+    needs: [check]
+    if: needs.check.outputs.new-release == 'yes'
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        profile: [debug, release]
+        # https://ftp.netbsd.org/pub/NetBSD/
+        # https://cdn.openbsd.org/pub/OpenBSD/
+        # https://archive.freebsd.org/old-releases/amd64/
+        target: ['netbsd-10.0-amd64', 'netbsd-9.4-amd64', 'netbsd-9.3-amd64', 'netbsd-9.2-amd64', 'openbsd-7.6-amd64', 'openbsd-7.5-amd64', 'openbsd-7.4-amd64', 'openbsd-7.3-amd64', 'freebsd-14.2-amd64', 'freebsd-14.1-amd64', 'freebsd-14.0-amd64', 'freebsd-13.4-amd64', 'freebsd-13.3-amd64', 'freebsd-13.2-amd64', 'freebsd-13.1-amd64', 'freebsd-13.0-amd64']
+
+    steps:
+      - run: curl -LO https://raw.githubusercontent.com/leleliu008/ppkg/master/ppkg
+      - run: chmod a+x ppkg
+      - run: ./ppkg setup
+      - run: ./ppkg update
+
+      - run: |
+          ~/.ppkg/uppm/installed/gsed/bin/gsed -i "/git-url/a git-sha: ${{ needs.check.outputs.git-sha }}" ~/.ppkg/repos.d/official-core/formula/sysinfo.yml
+
+      - if:  ${{ startsWith(matrix.target, 'openbsd') }}
+        run: ./ppkg install ${{ matrix.target }}/sysinfo --profile=${{ matrix.profile }}
+
+      - if:  ${{ ! startsWith(matrix.target, 'openbsd') }}
+        run: ./ppkg install ${{ matrix.target }}/sysinfo --profile=${{ matrix.profile }} --static
+
+      - run: ./ppkg bundle ${{ matrix.target }}/sysinfo .tar.gz
+      - run: ./ppkg bundle ${{ matrix.target }}/sysinfo .tar.xz
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sysinfo---${{ matrix.target }}.${{ matrix.profile }}.tar
+          path: sysinfo-*-${{ matrix.target }}.${{ matrix.profile }}.tar.*
+
+
+  macos:
+    needs: check
+    if: needs.check.outputs.new-release == 'yes'
+
+    runs-on: macos-14
+
+    strategy:
+      fail-fast: false
+      matrix:
+        target-version: ['10.15', '11.0', '12.0', '13.0', '14.0', '15.0']
+        target-arch: [x86_64, arm64]
+        profile: [debug, release]
+
+    steps:
+      - run: curl -LO https://raw.githubusercontent.com/leleliu008/ppkg/master/ppkg
+      - run: chmod a+x ppkg
+
+      - run: ./ppkg setup
+      - run: ./ppkg update
+
+      - run: |
+          ~/.ppkg/uppm/installed/gsed/bin/gsed -i "/git-url/a git-sha: ${{ needs.check.outputs.git-sha }}" ~/.ppkg/repos.d/official-core/formula/sysinfo.yml
+
+      - run: ./ppkg install macos-${{ matrix.target-version }}-${{ matrix.target-arch }}/sysinfo --profile=${{ matrix.profile }}
+      - run: ./ppkg bundle  macos-${{ matrix.target-version }}-${{ matrix.target-arch }}/sysinfo .tar.gz
+      - run: ./ppkg bundle  macos-${{ matrix.target-version }}-${{ matrix.target-arch }}/sysinfo .tar.xz
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sysinfo-macos-${{ matrix.target-version }}-${{ matrix.target-arch }}.${{ matrix.profile }}.tar
+          path: sysinfo-*.tar.*
+
+
+  linux:
+    needs: [check]
+    if: needs.check.outputs.new-release == 'yes'
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        target-arch: [loongarch64, x86_64, aarch64, ppc64le, riscv64, s390x]
+        profile: [debug, release]
+
+    steps:
+      - run: |
+          cat > run.sh <<EOF
+          set -ex
+
+          COLOR_GREEN='\033[0;32m'        # Green
+          COLOR_PURPLE='\033[0;35m'       # Purple
+          COLOR_OFF='\033[0m'             # Reset
+
+          echo() {
+              printf '%b\n' "\$*"
+          }
+
+          run() {
+              echo "\${COLOR_PURPLE}==>\${COLOR_OFF} \${COLOR_GREEN}\$@\${COLOR_OFF}"
+              eval "\$*"
+          }
+
+          ########################################################################
+
+          run uname -a
+          run id
+          run pwd
+
+          export GITHUB_ACTIONS=true
+
+          ########################################################################
+
+          run wget https://raw.githubusercontent.com/leleliu008/ppkg/master/ppkg
+          run chmod a+x ppkg
+          run ./ppkg setup
+          run ./ppkg update
+          run ./ppkg install sysinfo --static --profile=${{ matrix.profile }}
+          run ./ppkg bundle  sysinfo .tar.gz
+          run ./ppkg bundle  sysinfo .tar.xz
+
+          ########################################################################
+
+          run apk update
+          run apk add xz alpine-sdk
+
+          run openssl genrsa -out sysinfo.rsa 2048
+          run openssl rsa     -in sysinfo.rsa -pubout -out uctags.rsa.pub
+
+          run cp sysinfo.rsa.pub /etc/apk/keys/
+
+          run install -d ~/.abuild/
+          printf 'PACKAGER_PRIVKEY="%s"\n' "\$PWD/sysinfo.rsa" > ~/.abuild/abuild.conf
+
+          run ./ppkg export sysinfo .apk
+
+          run apk add *.apk
+          run apk info -L sysinfo
+          EOF
+
+      - run: curl -LO https://raw.githubusercontent.com/alpinelinux/alpine-chroot-install/master/alpine-chroot-install
+      - run: chmod +x alpine-chroot-install
+      - run: sudo ./alpine-chroot-install -d /alpine -a ${{ matrix.target-arch }} -p wget -p g++
+      - run: /alpine/enter-chroot sh run.sh
+      - run: /alpine/destroy
+
+      - run: ls
+
+      - run: |
+          set -ex
+
+          X="$(ls sysinfo-*-linux-${{ matrix.target-arch }}.${{ matrix.profile }}.tar.xz)"
+          Y="${X%.tar.xz}"
+          Z="$Y.apk"
+
+          mv sysinfo-*.apk   "$Z"
+          mv sysinfo.rsa.pub "$Z.rsa.pub"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sysinfo---linux-${{ matrix.target-arch }}.${{ matrix.profile }}.tar.gz
+          path: sysinfo-*-linux-${{ matrix.target-arch }}.${{ matrix.profile }}.tar.gz
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sysinfo---linux-${{ matrix.target-arch }}.${{ matrix.profile }}.tar.xz
+          path: sysinfo-*-linux-${{ matrix.target-arch }}.${{ matrix.profile }}.tar.xz
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sysinfo---linux-${{ matrix.target-arch }}.${{ matrix.profile }}.apk
+          path: sysinfo-*-linux-${{ matrix.target-arch }}.${{ matrix.profile }}.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sysinfo---linux-${{ matrix.target-arch }}.release.apk.rsa.pub
+          path: sysinfo-*-linux-${{ matrix.target-arch }}.release.apk.rsa.pub
+
+  deb:
+    needs: [check, linux]
+    if: needs.check.outputs.new-release == 'yes'
+
+    strategy:
+      fail-fast: false
+      matrix:
+        target-arch: [x86_64, aarch64]
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: sysinfo---linux-${{ matrix.target-arch }}.release.tar.xz
+          path: .
+
+      - run: install -d ~/.ppkg/installed/linux-musl-${{ matrix.target-arch }}/sysinfo
+      - run: tar xvf sysinfo-*-linux-${{ matrix.target-arch }}.release.tar.xz -C ~/.ppkg/installed/linux-musl-${{ matrix.target-arch }}/uctags --strip-components=1
+
+      - run: curl -LO https://raw.githubusercontent.com/leleliu008/ppkg/master/ppkg
+      - run: chmod a+x ppkg
+      - run: ./ppkg setup
+      - run: ./ppkg export linux-musl-${{ matrix.target-arch }}/sysinfo .deb
+
+      - if: matrix.target-arch == 'x86_64'
+        run: sudo dpkg -i *.deb
+
+      - if: matrix.target-arch == 'x86_64'
+        run: dpkg -L sysinfo
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sysinfo---linux-${{ matrix.target-arch }}.deb
+          path: sysinfo-*-linux-${{ matrix.target-arch }}.deb
+
+
+  rpm:
+    needs: [check, linux]
+    if: needs.check.outputs.new-release == 'yes'
+
+    strategy:
+      fail-fast: false
+      matrix:
+        target-arch: [x86_64]
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: sysinfo---linux-${{ matrix.target-arch }}.release.tar.xz
+          path: .
+
+      - run: |
+          cat > run.sh <<EOF
+          set -e
+
+          COLOR_GREEN='\033[0;32m'        # Green
+          COLOR_PURPLE='\033[0;35m'       # Purple
+          COLOR_OFF='\033[0m'             # Reset
+
+          echo() {
+              printf '%b\n' "\$*"
+          }
+
+          run() {
+              echo "\${COLOR_PURPLE}==>\${COLOR_OFF} \${COLOR_GREEN}\$@\${COLOR_OFF}"
+              eval "\$*"
+          }
+
+          run uname -a
+
+          run dnf -y install curl xz g++ rpmdevtools rpmlint
+
+          run install -d ~/.ppkg/installed/linux-musl-${{ matrix.target-arch }}/sysinfo
+          run tar xvf sysinfo-*-linux-${{ matrix.target-arch }}.release.tar.xz -C ~/.ppkg/installed/linux-musl-${{ matrix.target-arch }}/uctags --strip-components=1
+
+          run curl -LO https://raw.githubusercontent.com/leleliu008/ppkg/master/ppkg
+          run chmod a+x ppkg
+          run ./ppkg setup
+          run ./ppkg export linux-musl-${{ matrix.target-arch }}/sysinfo .rpm
+
+          run rpm -i *.rpm
+          run rpm -ql sysinfo
+          EOF
+
+          chmod +x run.sh
+
+      # https://github.com/multiarch/qemu-user-static
+      - if: matrix.target-arch != 'x86_64'
+        run: docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+
+      - if: matrix.target-arch == 'x86_64'
+        run: docker run -v $PWD:$PWD -w $PWD --name fedora         fedora sh run.sh
+
+      - if: matrix.target-arch == 'aarch64'
+        run: docker run -v $PWD:$PWD -w $PWD --name fedora arm64v8/fedora sh run.sh
+
+      - run: ls
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sysinfo---${{ matrix.target-arch }}.rpm
+          path: sysinfo-*.${{ matrix.target-arch }}.rpm
+
+
+  pkg:
+    needs: [check, linux]
+    if: needs.check.outputs.new-release == 'yes'
+
+    strategy:
+      fail-fast: false
+      matrix:
+        target-arch: [x86_64]
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: sysinfo---linux-${{ matrix.target-arch }}.release.tar.xz
+          path: .
+
+      - run: |
+          cat > run.sh <<EOF
+          run() {
+            printf '%b\n' "\$*"
+            eval "\$@"
+          }
+
+          set -e
+
+          run install -d ~/.ppkg/installed/linux-musl-${{ matrix.target-arch }}/sysinfo
+          run tar xvf sysinfo-*-linux-${{ matrix.target-arch }}.release.tar.xz -C ~/.ppkg/installed/linux-musl-${{ matrix.target-arch }}/uctags --strip-components=1
+
+          run curl -LO https://raw.githubusercontent.com/leleliu008/ppkg/master/ppkg
+          run chmod a+x ppkg
+
+          run ./ppkg setup
+          run ./ppkg export linux-musl-${{ matrix.target-arch }}/sysinfo .pkg.tar.xz
+
+          run sudo pacman -U --noconfirm *.pkg.tar.xz
+          run pacman -Qi sysinfo
+          EOF
+
+      - run: |
+          cat > Dockerfile <<EOF
+          FROM archlinux
+
+          ARG UID
+          ARG GID
+
+          RUN pacman -Syy --noconfirm && \
+              pacman -S sudo curl openssl gcc fakeroot base-devel --noconfirm && \
+              groupadd --gid \$GID leleliu008 && \
+              useradd  --gid \$GID --uid \$UID -m leleliu008 && \
+              echo 'leleliu008 ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers
+
+          USER leleliu008
+          EOF
+
+      - run: docker build --build-arg UID=$(id -u) --build-arg GID=$(id -g) -t myarchlinux .
+      - run: docker run -v $PWD:/home/leleliu008/w -w /home/leleliu008/w --name myarchlinux myarchlinux sh run.sh
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sysinfo---${{ matrix.target-arch }}.pkg.tar.xz
+          path: sysinfo-*-${{ matrix.target-arch }}.pkg.tar.xz
+
+
+  android:
+    needs: check
+    if: needs.check.outputs.new-release == 'yes'
+
+    runs-on: ubuntu-latest
+
+    container: ubuntu:24.04
+
+    strategy:
+      fail-fast: false
+      matrix:
+        profile: [debug, release]
+
+    steps:
+      - run: apt -y update
+      - run: apt -y install curl
+
+      - run: curl -LO https://raw.githubusercontent.com/leleliu008/ndk-pkg/master/ndk-pkg
+      - run: chmod +x ndk-pkg
+
+      - run: ./ndk-pkg about
+      - run: ./ndk-pkg setup
+      - run: ./ndk-pkg update
+
+      - run: |
+          printf "git-sha: ${{ needs.check.outputs.git-sha }}\n" >> ~/.ndk-pkg/repos.d/official-core/formula/sysinfo.yml
+
+      - run: ./ndk-pkg install android-35-arm64-v8a,armeabi-v7a,x86_64,x86/sysinfo --static --profile=${{ matrix.profile }}
+
+      - run: ./ndk-pkg bundle  android-35-arm64-v8a/sysinfo   .tar.xz
+      - run: ./ndk-pkg bundle  android-35-armeabi-v7a/sysinfo .tar.xz
+      - run: ./ndk-pkg bundle  android-35-x86_64/sysinfo      .tar.xz
+      - run: ./ndk-pkg bundle  android-35-x86/sysinfo         .tar.xz
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sysinfo---android-${{ matrix.profile }}
+          path: sysinfo-*-android-*.tar.xz
+
+
+  publish:
+    needs: [check, manpages, dragonflybsd, bsd, macos, android, linux, deb, rpm, pkg]
+    if: needs.check.outputs.new-release == 'yes'
+
+    runs-on: ubuntu-latest
+
+    env:
+      GH_TOKEN: ${{ github.token }}
+
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: '*'
+          path: .
+          merge-multiple: true
+
+      - run: ls -a
+
+      - name: repack
+        run: |
+          set -x
+
+          for FILENAME in sysinfo-*.tar.*
+          do
+            case $FILENAME in
+              *.pkg.tar.xz)
+                ;;
+              *)
+                DIR_NAME="${FILENAME%.tar.*}"
+
+                tar xvf "$FILENAME"
+                tar xvf manpages.tar.xz -C "$DIR_NAME" --strip-components=1
+
+                case $FILENAME in
+                  *.tar.gz)  FMT='--gzip'  ;;
+                  *.tar.xz)  FMT='--xz'    ;;
+                esac
+
+                tar -c -v "$FMT" -f "$FILENAME" "$DIR_NAME"
+            esac
+          done
+
+      - run: |
+          printf 'build-from: https://github.com/universal-ctags/ctags/tree/%s\n\n' ${{ needs.check.outputs.git-sha }} > notes.md
+          printf 'sha256sum:\n```\n%s\n```\n' "$(sha256sum sysinfo-*.tar.* *.deb *.rpm *.apk *.rsa.pub)" >> notes.md
+
+          VERSION="$(ls sysinfo-*-linux-x86_64.release.tar.xz | cut -d- -f2)"
+          TAGNAME="$VERSION+${{ needs.check.outputs.git-sha }}"
+
+          # to avaid: failed to run git: fatal: not a git repository (or any of the parent directories): .git
+          git -c init.defaultBranch=master init
+          git remote add origin ${{ github.repositoryUrl }}
+
+          gh release create "$TAGNAME" sysinfo-*.tar.* *.deb *.rpm *.apk *.rsa.pub --title "$TAGNAME" --notes-file notes.md

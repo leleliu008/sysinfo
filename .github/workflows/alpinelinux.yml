@@ -1,0 +1,110 @@
+name: alpinelinux
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  alpinelinux:
+    strategy:
+      fail-fast: false
+      matrix:
+        tag: ['3.21', '3.20', '3.19', '3.18', '3.17', '3.16', '3.15', '3.14', '3.13', '3.12']
+
+    runs-on: ubuntu-latest
+
+    container: alpine:${{ matrix.tag }}
+
+    steps:
+      - run: apk update
+      - run: apk add cmake ninja gcc libc-dev
+
+      - uses: actions/checkout@main
+
+      - run:  cmake -S . -B   build.d -G Ninja -DCMAKE_INSTALL_PREFIX=./output -DCMAKE_VERBOSE_MAKEFILE=ON
+      - run:  cmake --build   build.d
+      - run:  cmake --install build.d
+
+      - run:  ./output/bin/sysinfo --help
+      - run:  ./output/bin/sysinfo --version
+
+      - run:  ./output/bin/sysinfo -h
+      - run:  ./output/bin/sysinfo -v
+
+      - run:  ./output/bin/sysinfo kind
+      - run:  ./output/bin/sysinfo type
+      - run:  ./output/bin/sysinfo code
+      - run:  ./output/bin/sysinfo name
+      - run:  ./output/bin/sysinfo vers
+      - run:  ./output/bin/sysinfo arch
+      - run:  ./output/bin/sysinfo ncpu
+      - run:  ./output/bin/sysinfo libc
+
+      - run:  ./output/bin/sysinfo
+
+
+  chroot:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        target-arch: [x86_64, aarch64, ppc64le, riscv64, loongarch64, s390x, armhf]
+
+    steps:
+      - uses: actions/checkout@main
+
+      - run: |
+          cat > run.sh <<EOF
+          set -ex
+
+          COLOR_GREEN='\033[0;32m'        # Green
+          COLOR_PURPLE='\033[0;35m'       # Purple
+          COLOR_OFF='\033[0m'             # Reset
+
+          echo() {
+              printf '%b\n' "\$*"
+          }
+
+          run() {
+              echo "\${COLOR_PURPLE}==>\${COLOR_OFF} \${COLOR_GREEN}\$@\${COLOR_OFF}"
+              eval "\$*"
+          }
+
+          run uname -a
+          run id
+          run pwd
+
+          run apk update
+          run apk add cmake ninja gcc libc-dev
+
+          run cmake -S . -B   build.d -G Ninja -DCMAKE_INSTALL_PREFIX=./output -DCMAKE_VERBOSE_MAKEFILE=ON
+          run cmake --build   build.d
+          run cmake --install build.d
+
+          run ./output/bin/sysinfo --help
+          run ./output/bin/sysinfo --version
+
+          run ./output/bin/sysinfo -h
+          run ./output/bin/sysinfo -v
+
+          run ./output/bin/sysinfo kind
+          run ./output/bin/sysinfo type
+          run ./output/bin/sysinfo code
+          run ./output/bin/sysinfo name
+          run ./output/bin/sysinfo vers
+          run ./output/bin/sysinfo arch
+          run ./output/bin/sysinfo ncpu
+          run ./output/bin/sysinfo libc
+
+          run ./output/bin/sysinfo
+          EOF
+
+      - run: curl -LO https://raw.githubusercontent.com/alpinelinux/alpine-chroot-install/master/alpine-chroot-install
+      - run: chmod +x alpine-chroot-install
+      - run: sudo ./alpine-chroot-install -d /alpine -a ${{ matrix.target-arch }}
+      - run: /alpine/enter-chroot sh run.sh
+      - run: /alpine/destroy

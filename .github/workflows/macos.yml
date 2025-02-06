@@ -1,0 +1,44 @@
+name: build with brew on macOS
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+
+  brew:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-15, macos-14, macos-13]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - run:  brew update
+      - run:  brew install cmake ninja
+
+      - uses: actions/checkout@main
+
+      - run:  cmake -S . -B   build.d -G Ninja -DCMAKE_INSTALL_PREFIX=./output -DCMAKE_VERBOSE_MAKEFILE=ON
+      - run:  cmake --build   build.d
+      - run:  cmake --install build.d
+
+      - run:  ./output/bin/sysinfo --help
+      - run:  ./output/bin/sysinfo --version
+
+      - run:  ./output/bin/sysinfo -h
+      - run:  ./output/bin/sysinfo -v
+
+      - run:  ./output/bin/sysinfo kind
+      - run:  ./output/bin/sysinfo type
+      - run:  ./output/bin/sysinfo code
+      - run:  ./output/bin/sysinfo name
+      - run:  ./output/bin/sysinfo vers
+      - run:  ./output/bin/sysinfo arch
+      - run:  ./output/bin/sysinfo ncpu
+      - run:  ./output/bin/sysinfo libc
+
+      - run:  ./output/bin/sysinfo

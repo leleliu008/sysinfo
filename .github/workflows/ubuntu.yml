@@ -1,0 +1,50 @@
+name: ubuntu
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  vcpkg:
+
+    env:
+      DEBIAN_FRONTEND: noninteractive
+      TZ: Asia/Shanghai
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        version: [24.04, 22.04, 20.04]
+
+    container: ubuntu:${{ matrix.version }}
+
+    steps:
+      - run:  apt -y update
+      - run:  apt -y install cmake ninja-build gcc
+
+      - uses: actions/checkout@v4
+
+      - run:  cmake -S . -B   build.d -G Ninja -DCMAKE_INSTALL_PREFIX=./output -DCMAKE_VERBOSE_MAKEFILE=ON
+      - run:  cmake --build   build.d
+      - run:  cmake --install build.d
+
+      - run:  ./output/bin/sysinfo --help
+      - run:  ./output/bin/sysinfo --version
+
+      - run:  ./output/bin/sysinfo -h
+      - run:  ./output/bin/sysinfo -v
+
+      - run:  ./output/bin/sysinfo kind
+      - run:  ./output/bin/sysinfo type
+      - run:  ./output/bin/sysinfo code
+      - run:  ./output/bin/sysinfo name
+      - run:  ./output/bin/sysinfo vers
+      - run:  ./output/bin/sysinfo arch
+      - run:  ./output/bin/sysinfo ncpu
+      - run:  ./output/bin/sysinfo libc
+
+      - run:  ./output/bin/sysinfo

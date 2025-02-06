@@ -1,0 +1,47 @@
+name: LinuxMint
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        tag: [21.2, 20.1]
+
+    container: linuxmintd/mint${{ matrix.tag }}-amd64
+
+    steps:
+      - run:  id
+
+      - run:  sudo apt -y update
+      - run:  sudo apt -y install gcc cmake ninja
+
+      - uses: actions/checkout@main
+
+      - run:  cmake -S . -B   build.d -G Ninja -DCMAKE_INSTALL_PREFIX=./output -DCMAKE_VERBOSE_MAKEFILE=ON
+      - run:  cmake --build   build.d
+      - run:  cmake --install build.d
+
+      - run:  ./output/bin/sysinfo --help
+      - run:  ./output/bin/sysinfo --version
+
+      - run:  ./output/bin/sysinfo -h
+      - run:  ./output/bin/sysinfo -v
+
+      - run:  ./output/bin/sysinfo kind
+      - run:  ./output/bin/sysinfo type
+      - run:  ./output/bin/sysinfo code
+      - run:  ./output/bin/sysinfo name
+      - run:  ./output/bin/sysinfo vers
+      - run:  ./output/bin/sysinfo arch
+      - run:  ./output/bin/sysinfo ncpu
+      - run:  ./output/bin/sysinfo libc
+
+      - run:  ./output/bin/sysinfo

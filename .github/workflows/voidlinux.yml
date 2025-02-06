@@ -1,0 +1,51 @@
+name: voidlinux
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  voidlinux:
+    strategy:
+      fail-fast: false
+      matrix:
+        variant: ['voidlinux', 'voidlinux-musl']
+
+    runs-on: ubuntu-latest
+
+    container: voidlinux/${{ matrix.variant }}
+
+    steps:
+      # SSL certificate subject doesn't match host alpha.de.repo.voidlinux.org
+      # ERROR: [reposync] failed to fetch file `https://alpha.de.repo.voidlinux.org/current/x86_64-repodata': Operation not permitted
+      - run: sed -i s/alpha.de.repo.voidlinux.org/repo-default.voidlinux.org/g /usr/share/xbps.d/*
+
+      - run: xbps-install -Suy xbps
+      - run: xbps-install -Suy ca-certificates
+      - run: xbps-install -Suy cmake ninja gcc
+
+      # https://github.com/actions/checkout/issues/334
+      - uses: actions/checkout@v1
+
+      - run:  cmake -S . -B   build.d -G Ninja -DCMAKE_INSTALL_PREFIX=./output -DCMAKE_VERBOSE_MAKEFILE=ON
+      - run:  cmake --build   build.d
+      - run:  cmake --install build.d
+
+      - run:  ./output/bin/sysinfo --help
+      - run:  ./output/bin/sysinfo --version
+
+      - run:  ./output/bin/sysinfo -h
+      - run:  ./output/bin/sysinfo -v
+
+      - run:  ./output/bin/sysinfo kind
+      - run:  ./output/bin/sysinfo type
+      - run:  ./output/bin/sysinfo code
+      - run:  ./output/bin/sysinfo name
+      - run:  ./output/bin/sysinfo vers
+      - run:  ./output/bin/sysinfo arch
+      - run:  ./output/bin/sysinfo ncpu
+      - run:  ./output/bin/sysinfo libc
+
+      - run:  ./output/bin/sysinfo

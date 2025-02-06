@@ -1,0 +1,46 @@
+name: valgrind
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  valgrind:
+
+    runs-on: ubuntu-latest
+
+    container: ubuntu:24.04
+
+    env:
+      VALGRIND: valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --verbose --error-exitcode=1
+
+    steps:
+      - uses: actions/checkout@main
+
+      - run:  apt -y update
+      - run:  apt -y install cmake ninja-build gcc valgrind
+
+      - uses: actions/checkout@v4
+
+      - run:  cmake -S . -B   build.d -G Ninja -DCMAKE_INSTALL_PREFIX=./output -DCMAKE_VERBOSE_MAKEFILE=ON
+      - run:  cmake --build   build.d
+      - run:  cmake --install build.d
+
+      - run:  $VALGRIND ./output/bin/sysinfo --help
+      - run:  $VALGRIND ./output/bin/sysinfo --version
+
+      - run:  $VALGRIND ./output/bin/sysinfo -h
+      - run:  $VALGRIND ./output/bin/sysinfo -v
+
+      - run:  $VALGRIND ./output/bin/sysinfo kind
+      - run:  $VALGRIND ./output/bin/sysinfo type
+      - run:  $VALGRIND ./output/bin/sysinfo code
+      - run:  $VALGRIND ./output/bin/sysinfo name
+      - run:  $VALGRIND ./output/bin/sysinfo vers
+      - run:  $VALGRIND ./output/bin/sysinfo arch
+      - run:  $VALGRIND ./output/bin/sysinfo ncpu
+      - run:  $VALGRIND ./output/bin/sysinfo libc
+
+      - run:  $VALGRIND ./output/bin/sysinfo

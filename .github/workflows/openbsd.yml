@@ -1,0 +1,53 @@
+name: OpenBSD
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        openbsd-version: ['7.6', '7.5', '7.4', '7.3', '7.2']
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: cross-platform-actions/action@v0.25.0
+        with:
+          operating_system: openbsd
+          version: ${{ matrix.openbsd-version }}
+          shell: bash
+          run: |
+            run() {
+              printf "\033[0;35m==>\033[0m \033[0;32m%b\n\033[0m" "$*"
+              eval "$@"
+            }
+
+            run sudo pkg_add cmake ninja llvm
+
+            run cmake -S . -B   build.d -G Ninja -DCMAKE_INSTALL_PREFIX=./output -DCMAKE_VERBOSE_MAKEFILE=ON
+            run cmake --build   build.d
+            run cmake --install build.d
+
+            run ./output/bin/sysinfo --help
+            run ./output/bin/sysinfo --version
+
+            run ./output/bin/sysinfo -h
+            run ./output/bin/sysinfo -v
+
+            run ./output/bin/sysinfo kind
+            run ./output/bin/sysinfo type
+            run ./output/bin/sysinfo code
+            run ./output/bin/sysinfo name
+            run ./output/bin/sysinfo vers
+            run ./output/bin/sysinfo arch
+            run ./output/bin/sysinfo ncpu
+            run ./output/bin/sysinfo libc
+
+            run ./output/bin/sysinfo
