@@ -46,33 +46,15 @@ flags = [
 # You 100% do NOT need -DUSE_CLANG_COMPLETER in your flags; only the YCM
 # source code needs it.
 '-DUSE_CLANG_COMPLETER',
-# THIS IS IMPORTANT! Without a "-std=<something>" flag, clang won't know which
-# language to use when compiling headers. So it will guess. Badly. So C++
-# headers will be compiled as C headers. You don't want that so ALWAYS specify
-# a "-std=<something>".
-# For a C project, you would set this to something like 'c99' instead of
-# 'c++11'.
 '-std=c11',
-# ...and the same thing goes for the magic -x option which specifies the
-# language that the files to be compiled are written in. This is mostly
-# relevant for c++ headers.
-# For a C project, you would set this to 'c' instead of 'c++'.
 '-x',
 'c',
-'-isystem',
-# This path will only work on OS X, but extra paths that don't exist are not
-# harmful
-'/System/Library/Frameworks/Python.framework/Headers',
 '-I',
 '.',
 '-I',
 './src/lib',
 '-isystem',
 '/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include',
-'-isystem',
-'/usr/local/opt/android-sdk/ndk-bundle/sysroot/usr/include',
-'-isystem',
-'/home/leleliu008/.vcpkg/root/installed/x64-linux/include',
 ]
 
 # Set this to the absolute path to the folder (NOT the file!) containing the
