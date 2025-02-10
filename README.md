@@ -1,6 +1,6 @@
 # sysinfo
 
-A command-line utility to get your currently running system's information.
+A command-line utility to get your current running system's information.
 
 ## Build with CMake
 
@@ -45,13 +45,13 @@ cc -Os -s -flto -o sysinfo src/main/sysinfo.c src/lib/sysinfo.c -Isrc/lib
     sysinfo --version
     ```
 
-- **show your currently running system info**
+- **show your current running system's information**
 
     ```bash
     sysinfo
     ```
 
-- **show your currently running system belong to kind**
+- **show your current running system belong to kind**
 
     ```bash
     sysinfo kind
@@ -59,7 +59,7 @@ cc -Os -s -flto -o sysinfo src/main/sysinfo.c src/lib/sysinfo.c -Isrc/lib
 
     result might be any one of `windows` `darwin` `dragonflybsd` `freebsd` `netbsd` `openbsd` `linux` `android`
 
-- **show your currently running system belong to type**
+- **show your current running system belong to type**
 
     ```bash
     sysinfo type
@@ -67,7 +67,7 @@ cc -Os -s -flto -o sysinfo src/main/sysinfo.c src/lib/sysinfo.c -Isrc/lib
 
     result might be any one of `windows` `macos` `ios` `tvos` `watchos` `dragonflybsd` `freebsd` `netbsd` `openbsd` `linux` `android`
 
-- **show your currently running system code**
+- **show your current running system code**
 
     ```bash
     sysinfo code
@@ -75,7 +75,7 @@ cc -Os -s -flto -o sysinfo src/main/sysinfo.c src/lib/sysinfo.c -Isrc/lib
 
     result might be any one of `windows` `macos` `ios` `tvos` `watchos` `dragonflybsd` `freebsd` `netbsd` `openbsd` `android` `debian` `ubuntu` `centos` `fedora` `arch` `manjaro` `gentoo` `apline` `void`
 
-- **show your currently running system display name**
+- **show your current running system display name**
 
     ```bash
     sysinfo name
@@ -83,13 +83,13 @@ cc -Os -s -flto -o sysinfo src/main/sysinfo.c src/lib/sysinfo.c -Isrc/lib
 
     result might be any one of `Windows` `macOS` `iOS` `tvOS` `watchOS` `DragonFlyBSD` `FreeBSD` `NetBSD` `OpenBSD` `Android` `Debian GNU/Linux` `Ubuntu` `CentOS` `Fedora`
 
-- **show your currently running system's version**
+- **show your current running system's version**
 
     ```bash
     sysinfo vers
     ```
 
-- **show your currently running system's display name**
+- **show your current running system's display name**
 
     ```bash
     sysinfo arch
@@ -97,13 +97,13 @@ cc -Os -s -flto -o sysinfo src/main/sysinfo.c src/lib/sysinfo.c -Isrc/lib
 
     result might be any one of `x86_64` `amd64` `aarch64` `riscv64` `ppc64le` `loongarch64` `armv7` `armv7l`
 
-- **show your currently running system's avaiable number of cpu**
+- **show your current running system's avaiable number of cpu**
 
     ```bash
     sysinfo ncpu
     ```
 
-- **show your currently running system's libc**
+- **show your current running system's libc**
 
     ```bash
     sysinfo libc
