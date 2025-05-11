@@ -1,8 +1,8 @@
-cmake_minimum_required(VERSION 3.0.0)
+cmake_minimum_required(VERSION 3.14)
 
 project(sysinfo C)
 
-set(PROJECT_VERSION       1.0.0)
+set(PROJECT_VERSION       1.0.1)
 set(PROJECT_VERSION_MAJOR 1)
 set(PROJECT_VERSION_MINOR 0)
 set(PROJECT_VERSION_PATCH 0)
