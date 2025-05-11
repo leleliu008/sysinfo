@@ -13,8 +13,13 @@ endif()
 
 ########################################################################################
 
-add_library(sysinfo-static STATIC src/lib/sysinfo.c)
-add_library(sysinfo-shared SHARED src/lib/sysinfo.c)
+if (CMAKE_SYSTEM_NAME STREQUAL Linux)
+    add_library(sysinfo-static STATIC src/lib/sysinfo.c src/lib/determine-linux-system-libc.c)
+    add_library(sysinfo-shared SHARED src/lib/sysinfo.c src/lib/determine-linux-system-libc.c)
+else()
+    add_library(sysinfo-static STATIC src/lib/sysinfo.c)
+    add_library(sysinfo-shared SHARED src/lib/sysinfo.c)
+endif()
 
 set_target_properties(sysinfo-static PROPERTIES OUTPUT_NAME sysinfo CLEAN_DIRECT_OUTPUT 1 EXPORT_NAME static)
 set_target_properties(sysinfo-shared PROPERTIES OUTPUT_NAME sysinfo CLEAN_DIRECT_OUTPUT 1 EXPORT_NAME shared)

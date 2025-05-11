@@ -1,28 +1,30 @@
 #include <stdlib.h>
 #include <string.h>
+
 #include <sysinfo.h>
+
 #include <CUnit/CUnit.h>
 
 void test_sysinfo_kind() {
-    char osKind[31] = {0};
+    char osKind[SYSINFO_FIELD_BUFFER_SIZE];
 
-    int ret = sysinfo_kind(osKind, 30);
+    int ret = sysinfo_kind(osKind, SYSINFO_FIELD_BUFFER_SIZE);
 
     CU_ASSERT_EQUAL(ret, 0);
 }
 
 void test_sysinfo_type() {
-    char osType[31] = {0};
+    char osType[SYSINFO_FIELD_BUFFER_SIZE];
 
-    int ret = sysinfo_type(osType, 30);
+    int ret = sysinfo_type(osType, SYSINFO_FIELD_BUFFER_SIZE);
 
     CU_ASSERT_EQUAL(ret, 0);
 }
 
 void test_sysinfo_arch() {
-    char osArch[31] = {0};
+    char osArch[SYSINFO_FIELD_BUFFER_SIZE];
 
-    int ret = sysinfo_arch(osArch, 30);
+    int ret = sysinfo_arch(osArch, SYSINFO_FIELD_BUFFER_SIZE);
 
     CU_ASSERT_EQUAL(ret, 0);
 }

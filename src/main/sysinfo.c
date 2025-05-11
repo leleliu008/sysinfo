@@ -103,8 +103,7 @@ int main(int argc, char *argv[]) {
         }
 
         sysinfo_dump(&sysinfo);
-        sysinfo_free(&sysinfo);
-       
+
         return 0;
     }
 
@@ -115,15 +114,15 @@ int main(int argc, char *argv[]) {
         showHelp();
         return 0;
     } else if (strcmp(argv[1], "-v") == 0) {
-        printf("%s\n", "1.0.0");
+        printf("%s\n", "1.0.1");
         return 0;
     } else if (strcmp(argv[1], "--version") == 0) {
-        printf("%s\n", "1.0.0");
+        printf("%s\n", "1.0.1");
         return 0;
     } else if (strcmp(argv[1], "kind") == 0) {
-        char osKind[31] = {0};
+        char osKind[SYSINFO_FIELD_BUFFER_SIZE];
 
-        int ret = sysinfo_kind(osKind, 20);
+        int ret = sysinfo_kind(osKind, SYSINFO_FIELD_BUFFER_SIZE);
 
         if (ret != 0) {
             perror(NULL);
@@ -133,9 +132,9 @@ int main(int argc, char *argv[]) {
         printf("%s\n", osKind);
         return 0;
     } else if (strcmp(argv[1], "type") == 0) {
-        char osType[31] = {0};
+        char osType[SYSINFO_FIELD_BUFFER_SIZE];
 
-        int ret = sysinfo_type(osType, 20);
+        int ret = sysinfo_type(osType, SYSINFO_FIELD_BUFFER_SIZE);
 
         if (ret != 0) {
             perror(NULL);
@@ -145,9 +144,9 @@ int main(int argc, char *argv[]) {
         printf("%s\n", osType);
         return 0;
     } else if (strcmp(argv[1], "arch") == 0) {
-        char osArch[31] = {0};
+        char osArch[SYSINFO_FIELD_BUFFER_SIZE];
 
-        int ret = sysinfo_arch(osArch, 20);
+        int ret = sysinfo_arch(osArch, SYSINFO_FIELD_BUFFER_SIZE);
 
         if (ret != 0) {
             perror(NULL);
@@ -157,9 +156,9 @@ int main(int argc, char *argv[]) {
         printf("%s\n", osArch);
         return 0;
     } else if (strcmp(argv[1], "code") == 0) {
-        char osCode[31] = {0};
+        char osCode[SYSINFO_FIELD_BUFFER_SIZE];
 
-        int ret = sysinfo_code(osCode, 20);
+        int ret = sysinfo_code(osCode, SYSINFO_FIELD_BUFFER_SIZE);
 
         if (ret != 0) {
             perror(NULL);
@@ -169,9 +168,9 @@ int main(int argc, char *argv[]) {
         printf("%s\n", osCode);
         return 0;
     } else if (strcmp(argv[1], "name") == 0) {
-        char osName[31] = {0};
+        char osName[SYSINFO_FIELD_BUFFER_SIZE];
 
-        int ret = sysinfo_name(osName, 20);
+        int ret = sysinfo_name(osName, SYSINFO_FIELD_BUFFER_SIZE);
 
         if (ret != 0) {
             perror(NULL);
@@ -181,9 +180,9 @@ int main(int argc, char *argv[]) {
         printf("%s\n", osName);
         return 0;
     } else if (strcmp(argv[1], "vers") == 0) {
-        char osVers[31] = {0};
+        char osVers[SYSINFO_FIELD_BUFFER_SIZE];
 
-        int ret = sysinfo_vers(osVers, 20);
+        int ret = sysinfo_vers(osVers, SYSINFO_FIELD_BUFFER_SIZE);
 
         if (ret != 0) {
             perror(NULL);
