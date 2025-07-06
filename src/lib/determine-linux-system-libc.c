@@ -359,7 +359,7 @@ static int determine_by_inspect_elf_file(const char * fp) {
     struct stat st;
 
     if (stat(fp, &st) == -1) {
-        perror(fp);
+        //perror(fp);
         return ERROR_STAT;
     }
 
@@ -431,6 +431,7 @@ static int determine_by_inspect_elf_file(const char * fp) {
 }
 
 int determine_by_inspect_elf_files() {
+    // A Docker container usually does not have /sbin/init
     const char* list[2] = {"/sbin/init", "/bin/sh"};
 
     int ret;
