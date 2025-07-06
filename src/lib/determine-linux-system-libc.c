@@ -22,21 +22,6 @@
 #define LIBC_GNU     1
 #define LIBC_MUSL    2
 
-__attribute__((always_inline)) static inline int determine(const char * p) {
-    if (p[0] == 'l' && p[1] == 'i' && p[2] == 'b' && p[3] == 'c') {
-        // libc.so.6
-        if (p[4] == '.' && p[5] == 's' && p[6] == 'o' && p[7] == '.' && (p[8] == '6' || p[8] == '5') && p[9] == '\0') {
-            return LIBC_GNU;
-        }
-
-        // libc.musl-x86_64.so.1
-        if (p[4] == '.' && p[5] == 'm' && p[6] == 'u' && p[7] == 's' && p[8] == 'l' && p[9] == '-') {
-            return LIBC_MUSL;
-        }
-    }
-
-    return ERROR_NOT_DETERMINED;
-}
 
 static int handle_elf32(const int fd, const char * const fp) {
     Elf32_Ehdr ehdr;
@@ -175,20 +160,28 @@ static int handle_elf32(const int fd, const char * const fp) {
         if (dyn.d_tag == DT_NEEDED) {
             long xoffset = shdr.sh_offset + dyn.d_un.d_val;
 
-            char buf[100];
+            char p[100];
 
-            ret = pread(fd, buf, 100, xoffset);
+            ret = pread(fd, p, 100, xoffset);
 
             if (ret == -1) {
                 perror(fp);
                 return ERROR_READ;
             }
 
-            //puts(buf);
-            ret = determine(buf);
+            //puts(p);
 
-            if (ret != ERROR_NOT_DETERMINED) {
-                return ret;
+            // libc.so.6
+            // libc.so.5
+            // libc.musl-x86_64.so.1
+            if (p[0] == 'l' && p[1] == 'i' && p[2] == 'b' && p[3] == 'c' && p[4] == '.') {
+                if (p[5] == 's' && p[6] == 'o' && p[7] == '.' && (p[8] == '6' || p[8] == '5') && p[9] == '\0') {
+                    return LIBC_GNU;
+                }
+
+                if (p[5] == 'm' && p[6] == 'u' && p[7] == 's' && p[8] == 'l' && p[9] == '-') {
+                    return LIBC_MUSL;
+                }
             }
         }
     }
@@ -333,20 +326,28 @@ static int handle_elf64(const int fd, const char * const fp) {
         if (dyn.d_tag == DT_NEEDED) {
             long xoffset = shdr.sh_offset + dyn.d_un.d_val;
 
-            char buf[100];
+            char p[100];
 
-            ret = pread(fd, buf, 100, xoffset);
+            ret = pread(fd, p, 100, xoffset);
 
             if (ret == -1) {
                 perror(fp);
                 return ERROR_READ;
             }
 
-            //puts(buf);
-            ret = determine(buf);
+            //puts(p);
 
-            if (ret != ERROR_NOT_DETERMINED) {
-                return ret;
+            // libc.so.6
+            // libc.so.5
+            // libc.musl-x86_64.so.1
+            if (p[0] == 'l' && p[1] == 'i' && p[2] == 'b' && p[3] == 'c' && p[4] == '.') {
+                if (p[5] == 's' && p[6] == 'o' && p[7] == '.' && (p[8] == '6' || p[8] == '5') && p[9] == '\0') {
+                    return LIBC_GNU;
+                }
+
+                if (p[5] == 'm' && p[6] == 'u' && p[7] == 's' && p[8] == 'l' && p[9] == '-') {
+                    return LIBC_MUSL;
+                }
             }
         }
     }
