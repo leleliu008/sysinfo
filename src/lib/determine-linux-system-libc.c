@@ -418,8 +418,8 @@ static int determine_by_inspect_elf_file(const char * fp) {
     int ret;
 
     switch (a[4]) {
-        case 1: ret = handle_elf32(fd, fp); break;
-        case 2: ret = handle_elf64(fd, fp); break;
+        case ELFCLASS32: ret = handle_elf32(fd, fp); break;
+        case ELFCLASS64: ret = handle_elf64(fd, fp); break;
         default: 
             fprintf(stderr, "Invalid ELF file: %s\n", fp);
             ret = ERROR_BROKEN_ELF_FILE;
@@ -432,6 +432,7 @@ static int determine_by_inspect_elf_file(const char * fp) {
 
 int determine_by_inspect_elf_files() {
     // A Docker container usually does not have /sbin/init
+    // https://github.com/oasislinux/oasis A GNU/Linux distribution where all executables are fully statically linked
     const char* list[2] = {"/sbin/init", "/bin/sh"};
 
     int ret;
