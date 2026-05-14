@@ -48,7 +48,7 @@ jobs:
           esac
           printf 'arch=%s\n' "$X" >> "$GITHUB_OUTPUT"
 
-      - run: curl -LO https://cdimage.ubuntu.com/ubuntu-base/releases/24.04/release/ubuntu-base-24.04.2-base-${{ steps.arch.outputs.arch }}.tar.gz
+      - run: curl -LO https://cdimage.ubuntu.com/ubuntu-base/releases/24.04/release/ubuntu-base-24.04.4-base-${{ steps.arch.outputs.arch }}.tar.gz
 
       - run: install -d ubuntu-rootfs
       - run: tar xf ubuntu-base-*.tar.gz -C ubuntu-rootfs

@@ -26,7 +26,7 @@ jobs:
       - run:  apt -y update
       - run:  apt -y install cmake ninja-build gcc
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - run:  cmake -S . -B   build.d -G Ninja -DCMAKE_INSTALL_PREFIX=./output -DCMAKE_VERBOSE_MAKEFILE=ON
       - run:  cmake --build   build.d

@@ -16,7 +16,7 @@ jobs:
         netbsd-version: ['10.1', '10.0', '9.4', '9.3', '9.2']
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - run: curl -LO https://curl.se/ca/cacert.pem
 

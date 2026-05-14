@@ -82,7 +82,7 @@ jobs:
             run ./ppkg bundle  dragonflybsd-${{ matrix.version }}-x86_64/sysinfo .tar.gz
             run ./ppkg bundle  dragonflybsd-${{ matrix.version }}-x86_64/sysinfo .tar.xz
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: sysinfo---dragonflybsd-${{ matrix.version }}-x86_64-${{ matrix.profile }}.tar
           path: sysinfo-*-dragonflybsd-${{ matrix.version }}-x86_64.${{ matrix.profile }}.tar.*
@@ -121,7 +121,7 @@ jobs:
       - run: ./ppkg bundle ${{ matrix.target }}/sysinfo .tar.gz
       - run: ./ppkg bundle ${{ matrix.target }}/sysinfo .tar.xz
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: sysinfo---${{ matrix.target }}.${{ matrix.profile }}.tar
           path: sysinfo-*-${{ matrix.target }}.${{ matrix.profile }}.tar.*
@@ -154,7 +154,7 @@ jobs:
       - run: ./ppkg bundle  macos-${{ matrix.target-version }}-${{ matrix.target-arch }}/sysinfo .tar.gz
       - run: ./ppkg bundle  macos-${{ matrix.target-version }}-${{ matrix.target-arch }}/sysinfo .tar.xz
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: sysinfo-macos-${{ matrix.target-version }}-${{ matrix.target-arch }}.${{ matrix.profile }}.tar
           path: sysinfo-*.tar.*
@@ -245,22 +245,22 @@ jobs:
           mv sysinfo-*.apk   "$Z"
           mv sysinfo.rsa.pub "$Z.rsa.pub"
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: sysinfo---linux-${{ matrix.target-arch }}.${{ matrix.profile }}.tar.gz
           path: sysinfo-*-linux-${{ matrix.target-arch }}.${{ matrix.profile }}.tar.gz
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: sysinfo---linux-${{ matrix.target-arch }}.${{ matrix.profile }}.tar.xz
           path: sysinfo-*-linux-${{ matrix.target-arch }}.${{ matrix.profile }}.tar.xz
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: sysinfo---linux-${{ matrix.target-arch }}.${{ matrix.profile }}.apk
           path: sysinfo-*-linux-${{ matrix.target-arch }}.${{ matrix.profile }}.apk
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: sysinfo---linux-${{ matrix.target-arch }}.release.apk.rsa.pub
           path: sysinfo-*-linux-${{ matrix.target-arch }}.release.apk.rsa.pub
@@ -277,7 +277,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: sysinfo---linux-${{ matrix.target-arch }}.release.tar.xz
           path: .
@@ -296,7 +296,7 @@ jobs:
       - if: matrix.target-arch == 'x86_64'
         run: dpkg -L sysinfo
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: sysinfo---linux-${{ matrix.target-arch }}.deb
           path: sysinfo-*-linux-${{ matrix.target-arch }}.deb
@@ -314,7 +314,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: sysinfo---linux-${{ matrix.target-arch }}.release.tar.xz
           path: .
@@ -366,7 +366,7 @@ jobs:
 
       - run: ls
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: sysinfo---${{ matrix.target-arch }}.rpm
           path: sysinfo-*.${{ matrix.target-arch }}.rpm
@@ -384,7 +384,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: sysinfo---linux-${{ matrix.target-arch }}.release.tar.xz
           path: .
@@ -430,7 +430,7 @@ jobs:
       - run: docker build --build-arg UID=$(id -u) --build-arg GID=$(id -g) -t myarchlinux .
       - run: docker run -v $PWD:/home/leleliu008/w -w /home/leleliu008/w --name myarchlinux myarchlinux sh run.sh
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: sysinfo---${{ matrix.target-arch }}.pkg.tar.xz
           path: sysinfo-*-${{ matrix.target-arch }}.pkg.tar.xz
@@ -470,7 +470,7 @@ jobs:
       - run: ./ndk-pkg bundle  android-35-x86_64/sysinfo      .tar.xz
       - run: ./ndk-pkg bundle  android-35-x86/sysinfo         .tar.xz
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: sysinfo---android-${{ matrix.profile }}
           path: sysinfo-*-android-*.tar.xz
@@ -486,7 +486,7 @@ jobs:
       GH_TOKEN: ${{ github.token }}
 
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           pattern: '*'
           path: .
