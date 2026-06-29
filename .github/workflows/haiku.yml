@@ -7,7 +7,7 @@ on:
     branches: [ master, dev, tmp ]
 
 jobs:
-  haiku1:
+  haiku:
     runs-on: ubuntu-latest
 
     strategy:

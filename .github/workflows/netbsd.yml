@@ -7,7 +7,7 @@ on:
     branches: [ master ]
 
 jobs:
-  test:
+  netbsd:
     runs-on: ubuntu-latest
 
     strategy:
@@ -20,7 +20,7 @@ jobs:
 
       - run: curl -LO https://curl.se/ca/cacert.pem
 
-      - uses: cross-platform-actions/action@v0.27.0
+      - uses: cross-platform-actions/action@master
         with:
           operating_system: netbsd
           version: ${{ matrix.netbsd-version }}

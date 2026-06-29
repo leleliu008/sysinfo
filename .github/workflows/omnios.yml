@@ -30,7 +30,7 @@ jobs:
             }
 
             run pfexec pkg refresh
-            run pfexec pkg install cmake ninja
+            run pfexec pkg install cmake ninja gcc14
 
             run cmake -S . -B   build.d -G Ninja -DCMAKE_INSTALL_PREFIX=./output -DCMAKE_VERBOSE_MAKEFILE=ON
             run cmake --build   build.d

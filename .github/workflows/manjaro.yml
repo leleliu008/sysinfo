@@ -7,7 +7,7 @@ on:
     branches: [ master ]
 
 jobs:
-  test:
+  manjaro:
     runs-on: ubuntu-latest
 
     container: manjarolinux/base

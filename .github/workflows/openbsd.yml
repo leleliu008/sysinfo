@@ -7,7 +7,7 @@ on:
     branches: [ master ]
 
 jobs:
-  test:
+  openbsd:
     runs-on: ubuntu-latest
 
     strategy:

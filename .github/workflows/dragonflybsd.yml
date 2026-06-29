@@ -7,7 +7,7 @@ on:
     branches: [ master, dev, tmp ]
 
 jobs:
-  test:
+  dragonflybsd:
     runs-on: ubuntu-latest
 
     strategy:

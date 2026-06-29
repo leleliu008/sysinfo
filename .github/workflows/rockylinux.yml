@@ -7,7 +7,7 @@ on:
     branches: [ master, dev ]
 
 jobs:
-  test:
+  rockylinux:
     runs-on: ubuntu-latest
     
     strategy:
