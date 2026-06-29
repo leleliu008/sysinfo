@@ -1,0 +1,54 @@
+name: MidnightBSD
+
+on:
+  push:
+    branches: [ master, dev, tmp ]
+  pull_request:
+    branches: [ master, dev, tmp ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        midnightbsd-version: ['4.0.4']
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: cross-platform-actions/action@master
+        with:
+          operating_system: midnightbsd
+          version: ${{ matrix.midnightbsd-version }}
+          shell: bash
+          run: |
+            run() {
+              printf "\033[0;35m==>\033[0m \033[0;32m%b\n\033[0m" "$*"
+              eval "$@"
+            }
+
+            run sudo mport index
+            run sudo mport install cmake ninja gcc || true
+
+            run cmake -S . -B   build.d -G Ninja -DCMAKE_INSTALL_PREFIX=./output -DCMAKE_VERBOSE_MAKEFILE=ON
+            run cmake --build   build.d
+            run cmake --install build.d
+
+            run ./output/bin/sysinfo --help
+            run ./output/bin/sysinfo --version
+
+            run ./output/bin/sysinfo -h
+            run ./output/bin/sysinfo -v
+
+            run ./output/bin/sysinfo kind
+            run ./output/bin/sysinfo type
+            run ./output/bin/sysinfo code
+            run ./output/bin/sysinfo name
+            run ./output/bin/sysinfo vers
+            run ./output/bin/sysinfo arch
+            run ./output/bin/sysinfo ncpu
+            run ./output/bin/sysinfo libc
+
+            run ./output/bin/sysinfo

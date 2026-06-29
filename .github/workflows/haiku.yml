@@ -1,0 +1,49 @@
+name: Haiku
+
+on:
+  workflow_dispatch:
+
+jobs:
+  haiku1:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        version: ['r1beta5']
+
+    steps:
+      - uses: cross-platform-actions/action@master
+        with:
+          operating_system: haiku
+          version: ${{ matrix.version }}
+          shell: bash
+          run: |
+            run() {
+              printf "\033[0;35m==>\033[0m \033[0;32m%b\n\033[0m" "$*"
+              eval "$@"
+            }
+
+            run pkgman refresh
+            run pkgman install -y cmake ninja gcc
+
+            run cmake -S . -B   build.d -G Ninja -DCMAKE_INSTALL_PREFIX=./output -DCMAKE_VERBOSE_MAKEFILE=ON
+            run cmake --build   build.d
+            run cmake --install build.d
+
+            run ./output/bin/sysinfo --help
+            run ./output/bin/sysinfo --version
+
+            run ./output/bin/sysinfo -h
+            run ./output/bin/sysinfo -v
+
+            run ./output/bin/sysinfo kind
+            run ./output/bin/sysinfo type
+            run ./output/bin/sysinfo code
+            run ./output/bin/sysinfo name
+            run ./output/bin/sysinfo vers
+            run ./output/bin/sysinfo arch
+            run ./output/bin/sysinfo ncpu
+            run ./output/bin/sysinfo libc
+
+            run ./output/bin/sysinfo
