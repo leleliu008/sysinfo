@@ -1,4 +1,4 @@
-name: Haiku
+name: OmniOS
 
 on:
   push:
@@ -7,20 +7,20 @@ on:
     branches: [ master, dev, tmp ]
 
 jobs:
-  haiku1:
+  omnios:
     runs-on: ubuntu-latest
 
     strategy:
       fail-fast: false
       matrix:
-        version: ['r1beta5']
+        version: ['r151056', 'r151058']
 
     steps:
       - uses: actions/checkout@v5
 
       - uses: cross-platform-actions/action@master
         with:
-          operating_system: haiku
+          operating_system: omnios
           version: ${{ matrix.version }}
           shell: bash
           run: |
@@ -29,8 +29,8 @@ jobs:
               eval "$@"
             }
 
-            run pkgman refresh
-            run pkgman install -y cmake ninja gcc
+            run pfexec pkg refresh
+            run pfexec pkg install cmake ninja
 
             run cmake -S . -B   build.d -G Ninja -DCMAKE_INSTALL_PREFIX=./output -DCMAKE_VERBOSE_MAKEFILE=ON
             run cmake --build   build.d

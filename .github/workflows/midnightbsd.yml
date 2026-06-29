@@ -30,7 +30,7 @@ jobs:
             }
 
             run sudo mport index
-            run sudo mport install cmake ninja gcc || true
+            run sudo mport install cmake ninja || true
 
             run cmake -S . -B   build.d -G Ninja -DCMAKE_INSTALL_PREFIX=./output -DCMAKE_VERBOSE_MAKEFILE=ON
             run cmake --build   build.d
