@@ -97,7 +97,7 @@ cc -Os -s -flto -o sysinfo src/main/sysinfo.c src/lib/sysinfo.c -Isrc/lib
 
     result might be any one of `x86_64` `amd64` `aarch64` `riscv64` `ppc64le` `loongarch64` `armv7` `armv7l`
 
-- **show your current running system's avaiable number of cpu**
+- **show your current running system's available number of cpu**
 
     ```bash
     sysinfo ncpu
@@ -136,4 +136,4 @@ cc -Os -s -flto -o sysinfo src/main/sysinfo.c src/lib/sysinfo.c -Isrc/lib
 |`windows`|`windows`|`windows`|[Windows](https://www.microsoft.com/en-us/windows)||[Chocolatey](https://chocolatey.org/)|[msys2](https://www.msys2.org/)|[pacman](https://www.msys2.org/docs/package-management/)|
 |`windows`|`windows`|`windows`|[Windows](https://www.microsoft.com/en-us/windows)||[Chocolatey](https://chocolatey.org/)|[mingw32](https://www.msys2.org/)|[pacman](https://www.msys2.org/docs/package-management/)|
 |`windows`|`windows`|`windows`|[Windows](https://www.microsoft.com/en-us/windows)||[Chocolatey](https://chocolatey.org/)|[mingw64](https://www.msys2.org/)|[pacman](https://www.msys2.org/docs/package-management/)|
-|`android`|`android`|`android`|[Andriod](https://www.android.com/)|`bionic`||[termux](https://termux.com/)|[pkg](https://wiki.termux.com/wiki/Package_Management)|
+|`android`|`android`|`android`|[Android](https://www.android.com/)|`bionic`||[termux](https://termux.com/)|[pkg](https://wiki.termux.com/wiki/Package_Management)|
