@@ -73,7 +73,7 @@ static int handle_elf32(const int fd, const char * const fp) {
             return ERROR_NOT_FULLY_READ;
         }
 
-        fprintf(stderr, "%s interpreter : %s\n", fp, p);
+        //fprintf(stderr, "%s interpreter : %s\n", fp, p);
 
         /*
          * default dynamic loaders for glibc:
@@ -162,7 +162,7 @@ static int handle_elf64(const int fd, const char * const fp) {
             return ERROR_NOT_FULLY_READ;
         }
 
-        fprintf(stderr, "%s interpreter : %s\n", fp, p);
+        //fprintf(stderr, "%s interpreter : %s\n", fp, p);
 
         /*
          * default dynamic loaders for glibc:
