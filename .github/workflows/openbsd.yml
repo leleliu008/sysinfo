@@ -29,6 +29,8 @@ jobs:
               eval "$@"
             }
 
+            sudo sh -c 'printf "http://ftp.eu.openbsd.org/pub/OpenBSD\n" > /etc/installurl'
+
             run sudo pkg_add cmake ninja llvm
 
             run cmake -S . -B   build.d -G Ninja -DCMAKE_INSTALL_PREFIX=./output -DCMAKE_VERBOSE_MAKEFILE=ON
